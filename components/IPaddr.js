@@ -1,0 +1,1 @@
+export default IP='http://52.36.191.194';
