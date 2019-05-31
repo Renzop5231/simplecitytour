@@ -13,7 +13,7 @@ export default class PreDownload {
         //         if (typeof JSON.parse(response._bodyText)!= "undefined") {
         //             imgInfo = JSON.parse(response._bodyText);
         //             for (var key in imgInfo) {
-        //                 if (imgInfo.hasOwnProperty(key)) {         
+        //                 if (imgInfo.hasOwnProperty(key)) {
         //                     Storage.saveItem(key, imgInfo[key]);
         //                     console.log("City image of \""+ key + "\" were saved.");
         //                 }
@@ -29,7 +29,7 @@ export default class PreDownload {
         //     }
 
         // },(err) =>{
-        //     console.log('promise rejected.');            
+        //     console.log('promise rejected.');
         // });
 
     }
@@ -55,7 +55,7 @@ export default class PreDownload {
     // static getTypes() {
     //     path = '/app/types/';
 
-        
+
     //     CallBackend.get(path).then((fetch_resp) =>{
     //         if (fetch_resp[0]){
     //             response = fetch_resp[1];
@@ -74,21 +74,21 @@ export default class PreDownload {
     //         }
 
     //     },(err) =>{
-    //         console.log('promise rejected.');            
+    //         console.log('promise rejected.');
     //     });
 
-    // }
-    
+    // }zz
+
 
 
 
     static getLocations() {
         path ='/app/get_all_locations/';
-    
+
         // fire a get request to CallBackend
         CallBackend.get(path).then((fetch_resp) =>{
             if (fetch_resp[0]){
-                response = fetch_resp[1] 
+                response = fetch_resp[1]
                 if (typeof JSON.parse(response._bodyText) != "undefined") {
 
                     Storage.saveItem("citySequence", JSON.parse(response._bodyText)['citySequence']);
@@ -101,13 +101,13 @@ export default class PreDownload {
                 err = fetch_resp[1]
                 if (err.message = 'Network request failed'){
                     console.log('Network failed when fetching locations.')
-        
+
                 } else{
                     console.log("failed when fetching locations.")
                 }
-        
+
             }
-    
+
         });
     }
 
@@ -118,7 +118,7 @@ export default class PreDownload {
         }
         return name
     }
-    
+
 
     static getPoints() {
         path ='/app/get_points/';
@@ -127,30 +127,30 @@ export default class PreDownload {
             if (fetch_resp[0]){
                 response = fetch_resp[1];
                 // console.log(response);
+                console.log(response._bodyText)
                 if(response._bodyText.substring(0,1) != '<' && typeof JSON.parse(response._bodyText) != "undefined") {
 
                     Storage.saveItem("pointSequence", JSON.parse(response._bodyText)['pointSequence']);
 
                     //An dict including all points of all cities, the key of dict is the name of a city
-                    pointsOfAll      =    JSON.parse(response._bodyText); 
-
+                    pointsOfAll      =    JSON.parse(response._bodyText);
                     delete pointsOfAll['pointSequence'];
                     for (var cityName in pointsOfAll) {
                         if (pointsOfAll.hasOwnProperty(cityName)) {
 
                             pointsInCity = pointsOfAll[cityName]; // An array including all points objects in a city
-                            
+
                             if(pointsInCity.length > 0){
                                 for(var point in pointsInCity){
                                     pointURI = pointsInCity[point].img; //the base64 encoded image
                                     Storage.saveItem('pImage' + '_'+ this.format_name(cityName) + '_' + pointsInCity[point].name , pointURI);
                                     console.log("Point image \""+ this.format_name(cityName)+'_'+pointsInCity[point].name + "\" were saved.");
-                                    
+
                                     // delete it after storing the base64 encoded image, cause AsyncStorage only support 2MB for one item
                                     delete pointsInCity[point]['img'];
                                 }
 
-                            }   
+                            }
 
                         }
                     }
@@ -168,16 +168,13 @@ export default class PreDownload {
                 err = fetch_resp[1]
                 if (err.message = 'Network request failed'){
                     console.log('Network failed when fetching locations.')
-        
+
                 } else{
                     console.log("failed when fetching locations.")
                 }
             }
-        });    
+        });
     }
 
 
 }
-
-
-

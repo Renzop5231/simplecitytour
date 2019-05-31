@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { StackNavigator } from 'react-navigation';
+import { createStackNavigator, createBottomTabNavigator, createDrawerNavigator, createAppContainer } from 'react-navigation';
 
 import MainScreenComponent from './components/MainScreenComponent';
 import SignupComponent from './components/SignupComponent';
@@ -9,6 +9,7 @@ import SignupComponent from './components/SignupComponent';
 import LoginComponent from "./components/LoginComponent";
 
 import Locations from "./components/Locations";
+import OwnedLocations from "./components/ownedLocations";
 import PreviewCity from "./components/PreviewCity";
 import CityMap from "./components/CityMap";
 import Points from "./components/PointsComponent";
@@ -19,32 +20,44 @@ import AudioControl from './components/AudioControl';
 import PointTypes from './components/PointTypes'
 
 
+// const SimpleCityTours = createBottomTabNavigator({
+//     Home: {screen: MainScreenComponent},
+//     Login: {screen: LoginComponent},
+//     Signup: {screen: SignupComponent},
+//     Locations:{ screen: Locations},
+//     // PreviewCity:{screen: PreviewCity},
+//     // CityMap:{screen: CityMap} ,
+//     // Points:{screen:Points},
+//     // PointTypes:{screen:PointTypes}
+// });
 
-export const SimpleCityTours = StackNavigator({
+const navigatorStack = createStackNavigator({
+    Locations:{ screen: Locations},
+    CityMap:{screen: CityMap},
+    Points:{screen:Points},
+    PointTypes:{screen:PointTypes}
+})
+
+export default createAppContainer(createBottomTabNavigator({
     Home: {screen: MainScreenComponent},
     Login: {screen: LoginComponent},
     Signup: {screen: SignupComponent},
-    Locations:{ screen: Locations},
-    PreviewCity:{screen: PreviewCity},
-    CityMap:{screen: CityMap} ,
-    Points:{screen:Points},
-    PointTypes:{screen:PointTypes}
-},
+    Cities: navigatorStack,
+    Owned: {screen: OwnedLocations},
+})) ;
 
-);
-
-export default class App extends Component {
+class App extends Component {
     // constructor(props){
     //     super(props);
     //     Text.defaultProps.allowFontScaling=false;
     // }
     componentDidMount(){
         //download serverSequence
-        Storage.clearAllData();
+        console.disableYellowBox = true;
         PreCkeck.checkUpdate();
 
         Storage.getallkey();
-        
+
         //compare client side sequence and server side sequence
         this.updatecheck();
     }
@@ -52,21 +65,21 @@ export default class App extends Component {
     async updatecheck(){
         await Storage.getItem('citySequence').then((value) => {
             if (value === null){
-                console.log('No location info, downing from remote server....');
+                console.log('No location info, downloading from remote server....');
                 PreDownload.getLocations();
             }
         });
 
         await Storage.getItem('imageSequence').then((value) => {
             if (value === null){
-                console.log('No local image info, downing from remote server....');
+                console.log('No local image info, downloading from remote server....');
                 PreDownload.getCityImgs();
             }
         });
 
         await Storage.getItem('pointSequence').then((value) => {
             if (value === null){
-                console.log('No local points info, downing from remote server....');
+                console.log('No local points info, downloaing from remote server....');
                 PreDownload.getPoints();
             }
         });
@@ -85,7 +98,7 @@ export default class App extends Component {
                 console.log('Update location info, downloading from remote server....');
                 PreDownload.getLocations();
             }
-            
+
         },(err) =>{
             console.log('Comparing citySequence.....Error!')
         });
@@ -98,7 +111,7 @@ export default class App extends Component {
                 console.log('Update image info, downloading from remote server....');
                 PreDownload.getCityImgs();
             }
-            
+
         },(err) =>{
             console.log('Comparing imageSequence.....Error!')
         });
@@ -110,7 +123,7 @@ export default class App extends Component {
                 console.log('Update point info, downloading from remote server....');
                 PreDownload.getPoints();
             }
-            
+
         },(err) =>{
             console.log('Comparing imageSequence.....Error!')
         });
@@ -122,7 +135,7 @@ export default class App extends Component {
         //         console.log('Update types info, downloading from remote server....');
         //         PreDownload.getTypes();
         //     }
-            
+
         // },(err) =>{
         //     console.log('Comparing imageSequence.....Error!')
         // });
@@ -131,7 +144,7 @@ export default class App extends Component {
 
 
 
-        
+
     }
 
 

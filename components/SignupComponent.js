@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Text, View, StyleSheet, Button, TextInput, Image, Dimensions, ListView, Keyboard } from 'react-native';
+import { Alert, Text, View, StyleSheet, Button, TextInput, Image, Dimensions, ListView, Keyboard, TouchableOpacity, Platform } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MatIcon from 'react-native-vector-icons/MaterialIcons';
 import IP from './IPaddr';
 import CallBackend from './CallBackend';
+import axios from 'axios';
 
 export default class CreateAccount extends Component {
     constructor(props) {
@@ -46,65 +47,48 @@ export default class CreateAccount extends Component {
         if(this.state.password != this.state.confirm){
             alert('Password not match.');
         }else{
-            path = '/api/signup/';
-            url = IP + path;
-            data = {
-                "username": this.state.username,
-                "password": this.state.password,
-                "email": this.state.email,
-            };
-            CallBackend.post(path, data).then((fetch_resp) => {
-                if (fetch_resp[0]) {
-    
-    
-                    response = fetch_resp[1];
-    
-                    if (typeof JSON.parse(response._bodyText)['failed'] != "undefined") {
-                        if (JSON.parse(response._bodyText)["failed"] === "username existed") {
-                            alert("This username alread exists.");
-                            return
-                        }
-                        if (JSON.parse(response._bodyText)["failed"] === "invaild_username_or_password") {
-                            alert("Invaild Username Or Password.");
-                            return
-                        }
-    
-                        alert('Signup failed.');
-                        return
-    
-                    }
-    
-                    if (JSON.parse(response._bodyText)["succeed"] === "created") {
-                        alert("Successfully Signup.");
-                        console.log("User Successfully Signup: " +this.state.username);
-                    }
-    
-                } else {
-    
-                    err = fetch_resp[1];
-    
-                    if (err.message = 'Network request failed') {
-                        alert('Network failed.');
-    
-                    } else {
-                        alert("Signup failed.");
-                    }
-    
-    
-                }
-    
-            }, (err) => {
-    
-                console.log("Error: CallBackend.post")
-    
-            });
+            console.log("pressed");
+            const {navigate} = this.props.navigation;
+            data= {"username": this.state.username,
+                "password1": this.state.password,
+                "password2": this.state.password,
+                "email": this.state.email}
+            fetch('https://simplecitytours.com/rest-auth/registration/', {
+                method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                mode: 'cors', // no-cors, cors, *same-origin
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                //credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                //redirect: 'follow', // manual, *follow, error
+                //referrer: 'no-referrer', // no-referrer, *client
+                body: JSON.stringify(data), // body data type must match "Content-Type" header
+            })
+            .then(response => {
+                console.log('Success:', JSON.parse(response._bodyText).key);
 
+                Alert.alert(
+                    'Login Successful',
+                    JSON.parse(response._bodyText).key,
+                    [
+                      {text: 'Okay', onPress: () => {
+                          console.log('Okay pressed');
+                          navigate('Login');
+                        }}
+                    ],
+                    { cancelable: false }
+                  )
+
+            })
+            // .catch((error) => {
+            //     console.error(error);
+            //   });
+            ;
         }
-        
-
-
-
     }
+
 
     render() {
         const {navigate} = this.props.navigation;
@@ -170,7 +154,9 @@ export default class CreateAccount extends Component {
                                     ref={(cpw) =>{this.cpasswordInput = cpw} }
                                     onChangeText = {(confirm) =>this.setState({confirm})}/>
                 <View style= {{marginTop:25, width:this.state.screenwidth/2, alignSelf:'center'}}>
-                <Icon.Button name="user-plus" backgroundColor="blue" onPress={() => {this.sign_up()}}>Create An Account</Icon.Button>
+                <TouchableOpacity style={styles.Button} name="user-plus" backgroundColor="blue" onPress={() => {this.sign_up()}}>
+                <Text>Create An Account</Text>
+                </TouchableOpacity>
                 </View> 
 			
 
@@ -193,5 +179,26 @@ const styles = StyleSheet.create({
         padding: 10,
         color: 'grey'
 
+    },
+    button: {
+        width:Dimensions.get('window').width/2.3,
+        backgroundColor: '#FFE303',
+        marginHorizontal: 10,
+        borderRadius: 5,
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...Platform.select({
+            ios: {
+                alignItems:'center',
+                padding: 25,
+                marginBottom: 15,
+            },
+            android: {
+                width: Dimensions.get('window').width/3,
+                padding: 10,
+                marginBottom: 10,
+  
+            },
+          }),
     },
 })

@@ -13,13 +13,14 @@ import { Text,
     Image,
 TouchableOpacity} from 'react-native';
 var inAudioPage = false;
-export default class AudioContorler extends Component {
+export default class AudioControler extends Component {
     constructor(props){
         super(props);
         this.state = {
             soundFile : null,
             isPlaying : false,
             isLoaded:false,
+            audioFile: '',
         }
     }
      
@@ -53,18 +54,19 @@ export default class AudioContorler extends Component {
         // the online_song if for easy testing
         online_song = 'https://d1qg6pckcqcdk0.cloudfront.net/country/parmalee_hc201403_05_closeyoureyes.m4a' ;
         
+        console.log(this.props);
         try{
             
             this.state.soundFile = new Audio.Sound();
             
             // load the online_song for testing
-            await this.state.soundFile.loadAsync({ uri:  online_song});
+            await this.state.soundFile.loadAsync({ uri:  'https://simplecitytours.com/media/23/SW1-1_Start_At_Canada_Place.m4a'});
             
             // load sound from CallBackend
             // await this.state.soundFile.loadAsync({ uri:  IP+audio_path});
             
             this.state.isLoaded = true;
-            this.state.soundFile.playAsync();
+            // this.state.soundFile.playAsync();
             this.state.isPlaying = true;
             
 

@@ -21,7 +21,7 @@ import { Text,
 
 
 var inLocationPage= false;
-export default class Locations extends Component {
+export default class OwnedLocations extends Component {
 
   constructor(props) {
     super(props);
@@ -33,26 +33,30 @@ export default class Locations extends Component {
       ready: false,
       auth_token: null,
       audioFile: "",
-      ownedLocations: []
+      ownedLocations: [],
+      points: [],
+      userID: 0,
+      email: ''
     };
     navigate = this.props.navigation.navigate;
   }
 
   componentDidMount () {
-    console.log('Opening location page......');
+    console.log('Opening ownedlocation page......');
     inLocationPage = true;
     this.get_imgs();
     this.getToken();
+    this.start();
   }
 
   componentWillUnmount(){
-    console.log('Leaving location page......');
+    console.log('Leaving ownedlocation page......');
     inLocationPage = false;
 
 }
 
 	static navigationOptions = {
-		title: 'Locations',
+		title: 'OwnedLocations',
 		headerStyle: {
 			backgroundColor: '#7FFF00',
 		},
@@ -60,6 +64,15 @@ export default class Locations extends Component {
   
   async getToken(){
     console.log("thisis ahpp");
+    await Storage.getItem('email').then((resp) =>{
+        console.log(resp);
+        if(resp){
+            this.setState({email: resp});
+        }
+    }, (err) =>{
+        console.log('Geting token from database...Error!');
+        console.log(err.message);
+    });
     await Storage.getItem('token').then((resp) =>{
         console.log(resp);
         if(resp){
@@ -71,36 +84,75 @@ export default class Locations extends Component {
     });
   }
   start() {
-    fetch('https://simplecitytours.com/api/location/', {
-            method: 'GET', // *GET, POST, PUT, DELETE, etc.
-            mode: 'cors', // no-cors, cors, *same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            //credentials: 'same-origin', // include, *same-origin, omit
-            headers: {
-                'Content-Type': 'application/json',
-                // 'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            //redirect: 'follow', // manual, *follow, error
-            //referrer: 'no-referrer', // no-referrer, *client
-            // body: JSON.stringify(data), // body data type must match "Content-Type" header
-        })
-        .then(response => {
-            console.log('Success:', JSON.parse(response._bodyText))// parses JSON response into native Javascript objects 
-            locations = JSON.parse(response._bodyText);
-            owned = []
-            for(i=0;i<locations.length;i++){
-              if(locations[i].users.includes(14)){
-                console.log("this location: " + JSON.stringify(locations[i]));
-                owned.push(locations[i])
-              }
-            }
-            this.setState({ownedLocations:owned});
-            console.log(this.state.ownedLocations);
+    fetch('https://simplecitytours.com/api/users/', {
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'application/json',
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        //redirect: 'follow', // manual, *follow, error
+        //referrer: 'no-referrer', // no-referrer, *client
+        // body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(response => {
+        console.log('Success:', JSON.parse(response._bodyText))// parses JSON response into native Javascript objects 
+        userlist = JSON.parse(response._bodyText);
+        for(i=0;i<userlist.length;i++){
+          if(userlist[i].email == this.state.email){
+            this.setState({userID: userlist[i].id});
+            console.log(userlist[i].id);
+          }
+        }
+    });
 
-            for(i=0;i<locations.length;i++){
-              console.log(locations[i].name);
+    fetch('https://simplecitytours.com/api/location/', {
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'application/json',
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        //redirect: 'follow', // manual, *follow, error
+        //referrer: 'no-referrer', // no-referrer, *client
+        // body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(response => {
+        console.log('Success:', JSON.parse(response._bodyText))// parses JSON response into native Javascript objects 
+        locations = JSON.parse(response._bodyText);
+        owned = []
+        for(i=0;i<locations.length;i++){
+            if(locations[i].users.includes(14)){
+            console.log("this location: " + JSON.stringify(locations[i]));
+            owned.push(locations[i]);
             }
-        });
+        }
+        this.setState({ownedLocations:owned});
+        console.log(this.state.ownedLocations);
+    });
+
+    fetch('https://simplecitytours.com/api/point/', {
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'application/json',
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        //redirect: 'follow', // manual, *follow, error
+        //referrer: 'no-referrer', // no-referrer, *client
+        // body: JSON.stringify(data), // body data type must match "Content-Type" header
+    })
+    .then(response => {
+        console.log('Success:', JSON.parse(response._bodyText))// parses JSON response into native Javascript objects 
+        points = JSON.parse(response._bodyText);
+        this.setState({points: points});
+    });
     }
 
   async get_imgs(){
@@ -147,19 +199,28 @@ export default class Locations extends Component {
 
 
   renderCities() {
-    var allCities = this.state.allLocations;
-    i = 0;
+    // var allCities = this.state.ownedLocations;
+    // for(i=0;i<allCities.length;i++){
+    //     console.log(allCities[i].name);
+    //   }
+    var allCities = this.state.ownedLocations;
     all_name_point= [];
     name_point_dict = {};
 
-    for (var name in allCities) {
+    for (i=0;i<allCities.length;i++) {
+        pointlist = [];
       name_point_dict = {};
-      name_point_dict["id"] = i++;
-      name_point_dict["name"] = name;
-      name_point_dict["point"] = allCities[name][0];
-      name_point_dict["lat"] = allCities[name][1];
-      name_point_dict["lng"] = allCities[name][2];
-      name_point_dict["description"] = allCities[name][3];
+    //   for(j=0;j<this.state.points.length;j++){
+    //     if(this.state.points[j].location == allCities[i].id){
+    //         pointlist.push(this.state.points[j]);
+    //     }
+    //}
+      name_point_dict["id"] = i;
+      name_point_dict["name"] = allCities[i].name;
+      name_point_dict["point"] = '0';
+      name_point_dict["lat"] = allCities[i].lat;
+      name_point_dict["lng"] = allCities[i].lng;
+      name_point_dict["description"] = allCities[i].description;
       all_name_point.push(name_point_dict);
     }
 
@@ -197,7 +258,7 @@ export default class Locations extends Component {
     });
 
 
-    if (this.state.ready){
+    if (this.state.ready == true){
 
       return (
         <View style={styles.container}>
@@ -205,10 +266,8 @@ export default class Locations extends Component {
           {items}
         </View>
       );
-
-    }
-
   }
+}
 
 
 	render() {

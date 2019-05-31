@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Text, View, StyleSheet, Keyboard, TouchableOpacity, TextInput, Image, Dimensions, ListView, TouchableHighlight,ActivityIndicator } from 'react-native';
+import { Alert, Text, View, StyleSheet, Keyboard, TouchableOpacity, TextInput, Image, Dimensions, ListView, TouchableHighlight,ActivityIndicator } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import MatIcon from 'react-native-vector-icons/MaterialIcons';
 import CallBackend from './CallBackend';
 import Storage from './StorageControl';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
 
 var inLoginPage= false;
 var rmNetworkstatus = null;
@@ -14,7 +15,7 @@ export default class LoginComponent extends Component {
     constructor(props) {
 		super(props);
     	this.state = { 
-			username: "username",
+			email: "email",
             password: "password",
             lastuser:null,
             isLogout:true,
@@ -22,24 +23,25 @@ export default class LoginComponent extends Component {
             shownetwork:true,
             pressed:false,
             isReady:false,
-            test: ''
+            test: '',
+            token: ''
 
         };
         this.goBack  = this.props.navigation.goBack;
         this.navigate = this.props.navigation.navigate;
-        this.login = this.login.bind(this);
+        // this.login = this.login.bind(this);
         this.removeNetworkstatus = this.removeNetworkstatus.bind(this);
         changeShownNetworkState = this.changeShownNetworkState.bind(this);
     };
 
     static navigationOptions = {
-        title: 'LOGIN',
+        title: 'Login',
     };
 
     componentDidMount () {
         console.log('Opening login page......');
         inLoginPage = true;
-        this.get_user();
+        // this.get_user();
     }
     componentWillUnmount(){
         console.log('Leaving login page......');
@@ -47,200 +49,247 @@ export default class LoginComponent extends Component {
         
     }
 
-    async get_user(){
-        verify_token = null;
-        lastuser=null;
-        await Storage.getItem('username').then((name) =>{
-            console.log("Get user from database......");
-            if(name){
-                if(inLoginPage){
-                    console.log("User: " + name + " login previously.");
-                    lastuser=name;
-                    this.setState({
-                        lastuser: name,
-                        username:name,
-                    })
+    // async get_user(){
+    //     verify_token = null;
+    //     lastuser=null;
+    //     await Storage.getItem('username').then((name) =>{
+    //         console.log("Get user from database......");
+    //         if(name){
+    //             if(inLoginPage){
+    //                 console.log("User: " + name + " login previously.");
+    //                 lastuser=name;
+    //                 this.setState({
+    //                     lastuser: name,
+    //                     username:name,
+    //                 })
 
-                }
+    //             }
                  
-            }else{
-                console.log('No user data.')
-                if(inLoginPage){
-                    this.setState({
-                        isLogin  : false,
-                        isReady : true,
-                    })
-                    this.removeNetworkstatus();
+    //         }else{
+    //             console.log('No user data.')
+    //             if(inLoginPage){
+    //                 this.setState({
+    //                     isLogin  : false,
+    //                     isReady : true,
+    //                 })
+    //                 this.removeNetworkstatus();
 
 
-                }
-            }
+    //             }
+    //         }
     
-        },(err) =>{
-          console.log("Get username error.")
-        });
+    //     },(err) =>{
+    //       console.log("Get username error.")
+    //     });
 
-        if(lastuser != null){
-            await Storage.getItem('token').then((resp) =>{
-                console.log("Get user token from database......");
-                if(resp){
-                    verify_token = resp;
-                }else{
-                    console.log('No user token info.')
-                    if(inLoginPage){
-                        this.setState({
-                            isLogin  : false,
-                            isReady : true,
-                        })
-                        this.removeNetworkstatus();
-                    }
-                }
-            },(err) =>{
-              console.log("Get username error.")
-            });
-        }
+    //     if(lastuser != null){
+    //         await Storage.getItem('token').then((resp) =>{
+    //             console.log("Get user token from database......");
+    //             if(resp){
+    //                 verify_token = resp;
+    //             }else{
+    //                 console.log('No user token info.')
+    //                 if(inLoginPage){
+    //                     this.setState({
+    //                         isLogin  : false,
+    //                         isReady : true,
+    //                     })
+    //                     this.removeNetworkstatus();
+    //                 }
+    //             }
+    //         },(err) =>{
+    //           console.log("Get username error.")
+    //         });
+    //     }
 
-        if(verify_token != null){
-            path ='/api/verify_token/';
-            data = {'token' : verify_token}
-            console.log('Verifying token......');
-            await CallBackend.post(path, data).then((fetch_resp) =>{
-                if (fetch_resp[0]){
-                    response = fetch_resp[1];
-                    if(typeof JSON.parse(response._bodyText)['non_field_errors'] != "undefined" && JSON.parse(response._bodyText)['non_field_errors'][0] == 'Signature has expired.'){
-                        console.log('User token expired.')
-                        if(inLoginPage){
-                            this.setState({
-                                isLogin: false,
-                                isReady:true,
-                            })
+    //     if(verify_token != null){
+    //         path ='/api/verify_token/';
+    //         data = {'token' : verify_token}
+    //         console.log('Verifying token......');
+    //         await CallBackend.post(path, data).then((fetch_resp) =>{
+    //             if (fetch_resp[0]){
+    //                 response = fetch_resp[1];
+    //                 if(typeof JSON.parse(response._bodyText)['non_field_errors'] != "undefined" && JSON.parse(response._bodyText)['non_field_errors'][0] == 'Signature has expired.'){
+    //                     console.log('User token expired.')
+    //                     if(inLoginPage){
+    //                         this.setState({
+    //                             isLogin: false,
+    //                             isReady:true,
+    //                         })
 
-                            this.removeNetworkstatus();
-                        }
+    //                         this.removeNetworkstatus();
+    //                     }
     
-                    };
+    //                 };
 
-                    if(typeof JSON.parse(response._bodyText)['token'] != "undefined"){
-                        if(inLoginPage){
-                            console.log('Trying to login as: ' +this.state.username);
-                            this.setState({
-                                isLogin:true,
-                                // isLogout: false,
-                                isReady:true,
-                            });
+    //                 if(typeof JSON.parse(response._bodyText)['token'] != "undefined"){
+    //                     if(inLoginPage){
+    //                         console.log('Trying to login as: ' +this.state.username);
+    //                         this.setState({
+    //                             isLogin:true,
+    //                             // isLogout: false,
+    //                             isReady:true,
+    //                         });
 
-                            this.removeNetworkstatus();
-                        }
+    //                         this.removeNetworkstatus();
+    //                     }
 
-                    }
+    //                 }
 
-                }else{
-                    err = fetch_resp[1];
+    //             }else{
+    //                 err = fetch_resp[1];
 
 
 
-                    if (err.message = 'Network request failed'){
-                        if(inLoginPage){
-                            this.setState({
-                                hasnetwork:false,
-                                // isLogin:false,
-                            }) 
-                        }  
+    //                 if (err.message = 'Network request failed'){
+    //                     if(inLoginPage){
+    //                         this.setState({
+    //                             hasnetwork:false,
+    //                             // isLogin:false,
+    //                         }) 
+    //                     }  
                         
-                    }
-                    if(inLoginPage){
-                        this.setState({
-                            isReady:true,
-                            isLogin:false,
-                        }) 
-                        this.removeNetworkstatus();
-                    }
+    //                 }
+    //                 if(inLoginPage){
+    //                     this.setState({
+    //                         isReady:true,
+    //                         isLogin:false,
+    //                     }) 
+    //                     this.removeNetworkstatus();
+    //                 }
 
-                    console.log('Error in verifying get user : '+err.message);       
-                }            
-            },(err) =>{
-                alert('Internal error.')          
-            });
+    //                 console.log('Error in verifying get user : '+err.message);       
+    //             }            
+    //         },(err) =>{
+    //             alert('Internal error.')          
+    //         });
 
-        }
+    //     }
        
 
 
-      }
+    //   }
 
-    logout(){
-        console.log('User is trying to logout: ' +this.state.username);
-        Storage.removeItem("token");
-        Storage.getItem('token').then((token) =>{
-            // console.log(token);
-        },(err) =>{
-            console.log(err)
-        }); 
-        this.setState({
-            isLogout :  true,
-            isLogin  :  false,
-        })
-        this.goBack(null);
+    // logout(){
+    //     console.log('User is trying to logout: ' +this.state.username);
+    //     Storage.removeItem("token");
+    //     Storage.getItem('token').then((token) =>{
+    //         // console.log(token);
+    //     },(err) =>{
+    //         console.log(err)
+    //     }); 
+    //     this.setState({
+    //         isLogout :  true,
+    //         isLogin  :  false,
+    //     })
+    //     this.goBack(null);
 
-    }
+    // }
 
     login() {
-        console.log('User is trying to log in: ' +this.state.username);
-        if(inLoginPage){
-            this.setState({
-                pressed:true,
-            }) 
-        };
-        user_login = this.state.username;
-		path ='/app/login/';
-		url = IP +path;
-		data = {"username":this.state.username,"password":this.state.password};
-		CallBackend.post(path, data).then((fetch_resp) =>{
-            if(inLoginPage){
-                this.setState({
-                    pressed:false,
-                }) 
-            };
-			if (fetch_resp[0]){
+        console.log("pressed");
+        const {navigate} = this.props.navigation;
+        data = {
+            "email": this.state.email,
+            "password": this.state.password,
+        }
+        fetch('https://simplecitytours.com/rest-auth/login/', {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, cors, *same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            //credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+                'Content-Type': 'application/json',
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            //redirect: 'follow', // manual, *follow, error
+            //referrer: 'no-referrer', // no-referrer, *client
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        })
+        .then(response => {
+            console.log('Success:', JSON.parse(response._bodyText).key)// parses JSON response into native Javascript objects
+            this.setState({token: JSON.parse(response._bodyText).key});
 
-
-			response = fetch_resp[1];
-
-
-			if (typeof JSON.parse(response._bodyText)["non_field_errors"] != "undefined") {
-                if (JSON.parse(response._bodyText)["non_field_errors"][0] === "Unable to log in with provided credentials."){
-                    alert("Invaild username or password.")
-                }
-            }
-
-            if (typeof JSON.parse(response._bodyText)["token"] != "undefined") {
-				token = JSON.parse(response._bodyText)["token"];
-                Storage.saveItem('token', token);
-                Storage.saveItem('username', user_login);
-                this.goBack(null);
-
-            	console.log("User Login Successfully : " + this.state.username )
-			}
-			}else{
-				err = fetch_resp[1];
-				if (err.message = 'Network request failed'){
-					alert('Network failed.')
-				} else{
-					alert("Login failed.")
-				}
-			}
-
-		},(err) =>{
-            if(inLoginPage){
-                this.setState({
-                    pressed:false,
-                }) 
-            }
-            console.log(err.message);
-			alert("Internal error.");
-				
-        });
+            Storage.saveItem('token', this.state.token);
+            Storage.saveItem('email', this.state.email);
+            
+            Alert.alert(
+                'SignUp Successful',
+                'You may now view your cities.',
+                
+                [
+                    {text: 'Okay', onPress: () => {
+                        console.log('Okay pressed');
+                        navigate('Home');
+                      }}
+                ],
+                { cancelable: false }
+              )
+        })
+        .catch((error) => {
+            console.error(error);
+          });
     }
+
+
+
+    // login() {
+    //     console.log('User is trying to log in: ' +this.state.username);
+    //     if(inLoginPage){
+    //         this.setState({
+    //             pressed:true,
+    //         }) 
+    //     };
+    //     user_login = this.state.username;
+	// 	path ='/app/login/';
+	// 	url = IP +path;
+	// 	data = {"username":this.state.username,"password":this.state.password};
+	// 	CallBackend.post(path, data).then((fetch_resp) =>{
+    //         if(inLoginPage){
+    //             this.setState({
+    //                 pressed:false,
+    //             }) 
+    //         };
+	// 		if (fetch_resp[0]){
+
+
+	// 		response = fetch_resp[1];
+
+
+	// 		if (typeof JSON.parse(response._bodyText)["non_field_errors"] != "undefined") {
+    //             if (JSON.parse(response._bodyText)["non_field_errors"][0] === "Unable to log in with provided credentials."){
+    //                 alert("Invaild username or password.")
+    //             }
+    //         }
+
+    //         if (typeof JSON.parse(response._bodyText)["token"] != "undefined") {
+	// 			token = JSON.parse(response._bodyText)["token"];
+    //             Storage.saveItem('token', token);
+    //             Storage.saveItem('username', user_login);
+    //             this.goBack(null);
+
+    //         	console.log("User Login Successfully : " + this.state.username )
+	// 		}
+	// 		}else{
+	// 			err = fetch_resp[1];
+	// 			if (err.message = 'Network request failed'){
+	// 				alert('Network failed.')
+	// 			} else{
+	// 				alert("Login failed.")
+	// 			}
+	// 		}
+
+	// 	},(err) =>{
+    //         if(inLoginPage){
+    //             this.setState({
+    //                 pressed:false,
+    //             }) 
+    //         }
+    //         console.log(err.message);
+	// 		alert("Internal error.");
+				
+    //     });
+    // }
 
     changeShownNetworkState(){
         if(inLoginPage){
@@ -268,10 +317,11 @@ export default class LoginComponent extends Component {
                                     autoCorrect={false}
                                     keyboardType='email-address'
                                     returnKeyType="next"
-                                    placeholder={'username'}
+                                    placeholder={'email'}
                                     placeholderTextColor='black'
                                     ref={(el) =>{this.usernameInput = el} }
-                                    onChangeText = {(username) => this.setState({username})}
+                                    onChangeText = {(email) => this.setState({email})}
+                                    // value={this.state.token}
                                     />
 
                         <TextInput  style = {styles.input}
@@ -286,7 +336,7 @@ export default class LoginComponent extends Component {
         
                         <Text style= {styles.fgpw}>Forget Password?</Text>
                         {this.state.pressed && <ActivityIndicator size="large"/>}
-                        { ! this.state.pressed && <TouchableOpacity style={styles.buttonContainer} onPress= {() =>{Keyboard.dismiss; this.login()}}> 
+                        { ! this.state.pressed && <TouchableOpacity style={styles.buttonContainer} onPress= {() => {this.login()}}> 
                                      <Text style={styles.buttonText}>GO > </Text>
                         </TouchableOpacity>} 
         
