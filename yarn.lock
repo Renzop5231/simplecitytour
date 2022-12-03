@@ -1833,8 +1833,8 @@ decamelize@^1.1.1, decamelize@^1.2.0:
   resolved "https://registry.yarnpkg.com/decamelize/-/decamelize-1.2.0.tgz#f6534d15148269b20352e7bee26f501f9a191290"
 
 decode-uri-component@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.2.tgz#e69dbe25d37941171dd540e024c444cd5188e1e9"
 
 dedent@^0.6.0:
   version "0.6.0"
@@ -2660,6 +2660,10 @@ has-values@^1.0.0:
     is-number "^3.0.0"
     kind-of "^4.0.0"
 
+hex-color-regex@~1.0.2:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/hex-color-regex/-/hex-color-regex-1.0.3.tgz#2175693bc292fe06711b04faee9004790926f9b0"
+
 hoist-non-react-statics@^2.3.1, hoist-non-react-statics@^2.5.0:
   version "2.5.5"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-2.5.5.tgz#c5903cf409c0dfd908f388e619d86b9c1174cb47"
@@ -2871,6 +2875,12 @@ is-glob@^2.0.0, is-glob@^2.0.1:
   resolved "https://registry.yarnpkg.com/is-glob/-/is-glob-2.0.1.tgz#d096f926a3ded5600f3fdfd91198cb0888c2d863"
   dependencies:
     is-extglob "^1.0.0"
+
+is-hexcolor@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/is-hexcolor/-/is-hexcolor-1.0.0.tgz#495fee1a12baaf009c102a799bdec3193211274a"
+  dependencies:
+    hex-color-regex "~1.0.2"
 
 is-number@^2.1.0:
   version "2.1.0"
@@ -4166,6 +4176,12 @@ react-native-svg@8.0.8:
     color "^2.0.1"
     lodash "^4.16.6"
     pegjs "^0.10.0"
+
+react-native-sweet-alert@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-sweet-alert/-/react-native-sweet-alert-2.1.0.tgz#5729b8fba22536514bf8818bcdb3609fb0d984d3"
+  dependencies:
+    is-hexcolor "^1.0.0"
 
 react-native-tab-view@^1.2.0, react-native-tab-view@^1.4.1:
   version "1.4.1"
